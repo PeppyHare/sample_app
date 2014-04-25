@@ -2,6 +2,7 @@ class UsersController < ApplicationController
 before_action :signed_in_user,		only: [:edit, :update, :index]
 before_action :correct_user, 			only: [:edit, :update]
 before_action :admin_user, 				only: [:destroy]
+before_action :old_user, 					only: [:new, :create]
 
 def new
   @user = User.new
@@ -30,9 +31,14 @@ def edit
 end
 
 def destroy
-	User.find(params[:id]).destroy
-	flash[:success] = "User deleted."
-	redirect_to users_url
+	if current_user.admin? && User.find(params[:id]).email == current_user.email
+		flash[:error] = "Admin cannot delete self."
+		redirect_to users_url
+	else
+		User.find(params[:id]).destroy
+		flash[:success] = "User deleted."
+		redirect_to users_url
+	end
 end
 
 def update
@@ -65,5 +71,11 @@ private
 
     def admin_user
     	redirect_to(root_url) unless current_user.admin?
+    end
+
+    def old_user
+    	if signed_in?
+    		redirect_to root_url
+    	end
     end
 end
