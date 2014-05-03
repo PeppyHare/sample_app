@@ -11,7 +11,7 @@ describe "StaticPages" do
 
     describe "Home Page" do
         before(:each) { visit root_path}
-        let(:heading) {'Wobsite'}
+        let(:heading) {'Fierce Lake'}
         let(:page_title) {''}
         it_should_behave_like "all static pages"
         it {should_not have_title('| Home')}
@@ -29,6 +29,17 @@ describe "StaticPages" do
                 user.feed.each do |item|
                     expect(page).to have_selector("li##{item.id}", text: item.content)
                 end
+            end
+
+            describe "follower/following counts" do
+                let(:other_user) { FactoryGirl.create(:user) }
+                before do
+                    other_user.follow!(user)
+                    visit root_path
+                end
+
+                it { should have_link("0 following", href: following_user_path(user)) }
+                it { should have_link("1 followers", href: followers_user_path(user))}
             end
 
             describe "with pagination" do
@@ -93,7 +104,7 @@ describe "StaticPages" do
         click_link "Home"
         click_link "Sign up now!"
         expect(page).to have_title(full_title('Sign up'))
-        click_link "wobsite"
+        click_link "fiercelake"
         expect(page).to have_title(full_title(''))
     end
 
